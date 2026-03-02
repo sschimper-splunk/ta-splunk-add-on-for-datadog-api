@@ -50,7 +50,7 @@ def get_slice_time(start, end, steps):
 
 
 def build_event_url(datadog_site, start, end, priority, sources, tags, unaggregated):
-    endpoint = "https://api.datadoghq.{}/api/v1/events?".format(datadog_site)
+    endpoint = "https://api.{}/api/v1/events?".format(datadog_site)
     param = "start=" + str(start)
     param += "&end=" + str(end)
     if priority:
