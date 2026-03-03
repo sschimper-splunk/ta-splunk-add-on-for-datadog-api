@@ -94,6 +94,10 @@
                                     {
                                         "value": "eu",
                                         "label": "eu"
+                                    },
+                                    {
+                                        "value": "us1-fed",
+                                        "label": "us1-fed"
                                     }
                                 ]
                             },

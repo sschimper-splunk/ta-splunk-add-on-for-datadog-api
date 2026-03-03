@@ -23,17 +23,17 @@ import datetime
 import requests
 import json
 
-'''
+"""
     IMPORTANT
     Edit only the validate_input and collect_events functions.
     Do not edit any other part in this file.
     This file is generated only once when creating the modular input.
-'''
-'''
+"""
+"""
 # For advanced users, if you want to create single instance mod input, uncomment this method.
 def use_single_instance_mode():
     return True
-'''
+"""
 
 
 def get_slice_time(start, end, steps):
@@ -45,12 +45,16 @@ def get_slice_time(start, end, steps):
         if len(chunks) is counter:
             time_list.append((chunk, end))
         else:
-            time_list.append((chunk, chunk+steps-1))
+            time_list.append((chunk, chunk + steps - 1))
     return time_list
 
 
 def build_event_url(datadog_site, start, end, priority, sources, tags, unaggregated):
-    endpoint = "https://api.datadoghq.{}/api/v1/events?".format(datadog_site)
+    endpoint = (
+        "https://api.datadoghq.{}/api/v1/events?".format(datadog_site)
+        if datadog_site != "us1-fed"
+        else "https://api.ddog-gov.com/api/v1/events?"
+    )
     param = "start=" + str(start)
     param += "&end=" + str(end)
     if priority:
@@ -76,17 +80,16 @@ def validate_input(helper, definition):
     # sources = definition.parameters.get('sources', None)
     # tags = definition.parameters.get('tags', None)
     # unaggregated = definition.parameters.get('unaggregated', None)
-    start_time = definition.parameters.get('start_time', None)
-    end_time = definition.parameters.get('end_time', None)
+    start_time = definition.parameters.get("start_time", None)
+    end_time = definition.parameters.get("end_time", None)
 
-    priority = definition.parameters.get('priority', None)
+    priority = definition.parameters.get("priority", None)
 
     try:
-        datetime.datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
-        datetime.datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
+        datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        datetime.datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S")
     except ValueError:
-        raise ValueError(
-            "Incorrect date format, should be YYYY-MM-DD hh:mm:ss")
+        raise ValueError("Incorrect date format, should be YYYY-MM-DD hh:mm:ss")
     pass
 
 
@@ -180,16 +183,16 @@ def collect_events(helper, ew):
     helper.new_event(data, time=None, host=None, index=None, source=None, sourcetype=None, done=True, unbroken=True)
     """
 
-    '''
+    """
     # The following example writes a random number as an event. (Multi Instance Mode)
     # Use this code template by default.
     import random
     data = str(random.randint(0,100))
     event = helper.new_event(source=helper.get_input_type(), index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
     ew.write_event(event)
-    '''
+    """
 
-    '''
+    """
     # The following example writes a random number as an event for each input config. (Single Instance Mode)
     # For advanced users, if you want to create single instance mod input, please use this code template.
     # Also, you need to uncomment use_single_instance_mode() above.
@@ -199,60 +202,67 @@ def collect_events(helper, ew):
         data = str(random.randint(0,100))
         event = helper.new_event(source=input_type, index=helper.get_output_index(stanza_name), sourcetype=helper.get_sourcetype(stanza_name), data=data)
         ew.write_event(event)
-    '''
-    # Get account info   
-    global_account = helper.get_arg('global_account')
-    opt_api_key = global_account['api_key']
-    opt_app_key = global_account['app_key']
-    opt_datadog_site = global_account['dd_site']
- 
-    opt_start_time = helper.get_arg('start_time')
-    opt_end_time = helper.get_arg('end_time')
+    """
+    # Get account info
+    global_account = helper.get_arg("global_account")
+    opt_api_key = global_account["api_key"]
+    opt_app_key = global_account["app_key"]
+    opt_datadog_site = global_account["dd_site"]
 
-    opt_interval = helper.get_arg('interval')
-    
+    opt_start_time = helper.get_arg("start_time")
+    opt_end_time = helper.get_arg("end_time")
+
+    opt_interval = helper.get_arg("interval")
+
     helper.log_debug("[-] DataDog Events: datadog site {}".format(opt_datadog_site))
-    
+
     helper.log_debug("[-] DataDog Events: UI start time {}".format(opt_start_time))
     helper.log_debug("[-] DataDog Events: UI end time {}".format(opt_end_time))
 
-    opt_start_time = datetime.datetime.strptime(
-        opt_start_time, '%Y-%m-%d %H:%M:%S')
+    opt_start_time = datetime.datetime.strptime(opt_start_time, "%Y-%m-%d %H:%M:%S")
     opt_start_time = int(
-        (opt_start_time - datetime.datetime(1970, 1, 1)).total_seconds())
+        (opt_start_time - datetime.datetime(1970, 1, 1)).total_seconds()
+    )
 
-    opt_end_time = datetime.datetime.strptime(
-        opt_end_time, '%Y-%m-%d %H:%M:%S')
-    opt_end_time = int(
-        (opt_end_time - datetime.datetime(1970, 1, 1)).total_seconds())
+    opt_end_time = datetime.datetime.strptime(opt_end_time, "%Y-%m-%d %H:%M:%S")
+    opt_end_time = int((opt_end_time - datetime.datetime(1970, 1, 1)).total_seconds())
 
-    opt_priority = helper.get_arg('priority')
-    opt_sources = helper.get_arg('sources')
-    opt_tags = helper.get_arg('tags')
-    opt_unaggregated = helper.get_arg('unaggregated')
+    opt_priority = helper.get_arg("priority")
+    opt_sources = helper.get_arg("sources")
+    opt_tags = helper.get_arg("tags")
+    opt_unaggregated = helper.get_arg("unaggregated")
 
     # Slice
-    steps = 60*60*24
+    steps = 60 * 60 * 24
 
-    #payload = {}
+    # payload = {}
     headers = {
-        'Content-type': 'application/json',
-        'DD-API-KEY': opt_api_key,
-        'DD-APPLICATION-KEY': opt_app_key
+        "Content-type": "application/json",
+        "DD-API-KEY": opt_api_key,
+        "DD-APPLICATION-KEY": opt_app_key,
     }
 
     # checkpoint key
-    current_url = build_event_url(opt_datadog_site, opt_start_time, opt_end_time,
-                            opt_priority, opt_sources, opt_tags, opt_unaggregated)
-    key = "{}_DATADOG_EVENTS_processing".format(
-        helper.get_input_stanza_names())
+    current_url = build_event_url(
+        opt_datadog_site,
+        opt_start_time,
+        opt_end_time,
+        opt_priority,
+        opt_sources,
+        opt_tags,
+        opt_unaggregated,
+    )
+    key = "{}_DATADOG_EVENTS_processing".format(helper.get_input_stanza_names())
     last_ran_key = "last_ran_{}".format(key)
 
     # check checkpoint
 
     helper.log_debug("[-] DataDog Events: check checkpoint")
     helper.log_debug(
-        "[-] DataDog Events: Last run time: {}".format(helper.get_check_point(last_ran_key)))
+        "[-] DataDog Events: Last run time: {}".format(
+            helper.get_check_point(last_ran_key)
+        )
+    )
 
     now = datetime.datetime.utcnow()
     now = int((now - datetime.datetime(1970, 1, 1)).total_seconds())
@@ -270,48 +280,76 @@ def collect_events(helper, ew):
     helper.log_debug("[-] DataDog Events: opt_end_time - {}".format(opt_end_time))
 
     helper.log_debug(
-        "\t[-] DataDog Events: last run checkpoint: {} -- value: {}".format(last_ran_key, helper.get_check_point(last_ran_key)))
+        "\t[-] DataDog Events: last run checkpoint: {} -- value: {}".format(
+            last_ran_key, helper.get_check_point(last_ran_key)
+        )
+    )
 
     # Pageing
 
     time_list = get_slice_time(int(opt_start_time), int(opt_end_time), steps)
 
-    helper.log_debug(
-        "Processing DataDog Events time_list: {}".format(len(time_list)))
+    helper.log_debug("Processing DataDog Events time_list: {}".format(len(time_list)))
     for time in time_list:
-        helper.log_debug(
-            "\t[-] DataDog Events:In for: processing time {}".format(time))
+        helper.log_debug("\t[-] DataDog Events:In for: processing time {}".format(time))
         # build url according to user's inputs
-        url = build_event_url(opt_datadog_site, time[0], time[1], opt_priority,
-                        opt_sources, opt_tags, opt_unaggregated)
+        url = build_event_url(
+            opt_datadog_site,
+            time[0],
+            time[1],
+            opt_priority,
+            opt_sources,
+            opt_tags,
+            opt_unaggregated,
+        )
 
-        response = helper.send_http_request(url, "GET", parameters=None, payload=None,
-                                            headers=headers, cookies=None, verify=True, cert=None, timeout=None, use_proxy=True)
+        response = helper.send_http_request(
+            url,
+            "GET",
+            parameters=None,
+            payload=None,
+            headers=headers,
+            cookies=None,
+            verify=True,
+            cert=None,
+            timeout=None,
+            use_proxy=True,
+        )
 
-        helper.log_debug("[-] DataDog Events API: Response code: {}".format(response.status_code))
+        helper.log_debug(
+            "[-] DataDog Events API: Response code: {}".format(response.status_code)
+        )
 
         if response.status_code != 200:
-            helper.log_debug(
-                "\t[-] DataDog Events API Error: {}".format(response.text))
+            helper.log_debug("\t[-] DataDog Events API Error: {}".format(response.text))
 
         events = response.json()
 
         if "events" in events:
-            for event in events['events']:
+            for event in events["events"]:
                 try:
-                    event['ddhost'] = event['host']
-                    event['ddsource'] = event['source']
-                    del event['host']
-                    del event['source']
+                    event["ddhost"] = event["host"]
+                    event["ddsource"] = event["source"]
+                    del event["host"]
+                    del event["source"]
                 except Exception as e:
                     helper.log_debug(
-                        "\t[-] Try Block 1: DataDog Events Exception {}".format(e))
+                        "\t[-] Try Block 1: DataDog Events Exception {}".format(e)
+                    )
                     pass
 
                 try:
-                    event_time = event['date_happened']
-                    event = helper.new_event(json.dumps(
-                        event), time=event_time, host=None, index=None, source=None, sourcetype=None, done=True, unbroken=True)
+                    event_time = event["date_happened"]
+                    event = helper.new_event(
+                        json.dumps(event),
+                        time=event_time,
+                        host=None,
+                        index=None,
+                        source=None,
+                        sourcetype=None,
+                        done=True,
+                        unbroken=True,
+                    )
                     ew.write_event(event)
 
                     # save checkpoint for every event
@@ -323,6 +361,7 @@ def collect_events(helper, ew):
                     helper.save_check_point(last_ran_key, timestamp)
                 except Exception as e:
                     helper.log_debug(
-                        "\t[-] Try Block 2: DataDog Events Exception {}".format(e))
+                        "\t[-] Try Block 2: DataDog Events Exception {}".format(e)
+                    )
         else:
             helper.log_debug("\t[-] No events to retrieve for {}.".format(url))

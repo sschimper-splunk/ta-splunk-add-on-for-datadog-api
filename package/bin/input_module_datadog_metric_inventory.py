@@ -51,7 +51,11 @@ def get_slice_time(start, end, steps):
 
 
 def build_metric_url(datadog_site, start, end, query):
-    endpoint = "https://app.datadoghq.{}/api/v1/query?".format(datadog_site)
+    endpoint = (
+        "https://app.datadoghq.{}/api/v1/query?".format(datadog_site)
+        if datadog_site != "us1-fed"
+        else "https://api.ddog-gov.com/api/v1/events?"
+    )
     param = "&from=" + str(start)
     param += "&to=" + str(end)
     param += "&query=" + query
@@ -132,7 +136,7 @@ def collect_events(helper, ew):
     # TODO add checkpoint
     # set checkpoint key
     # checkpoint key cannot contian '/', replace '/' with '-' in case query contains any '/'
-    update_query = query.replace("/","-")
+    update_query = query.replace("/", "-")
     key = "{}_DATADOG_METRICS_processing_for_{}_{}_{}_{}".format(
         helper.get_input_stanza_names(),
         opt_start_time,
@@ -150,7 +154,11 @@ def collect_events(helper, ew):
     )
 
     # Fist time: use start time from UI and save it in checkpoint
-    helper.log_debug("[-] DataDog Metrics: getting checkpoint key: {}\nval: {}".format(key, helper.get_check_point(key)))
+    helper.log_debug(
+        "[-] DataDog Metrics: getting checkpoint key: {}\nval: {}".format(
+            key, helper.get_check_point(key)
+        )
+    )
     if helper.get_check_point(key) is None:
         # convert start time to datetime type
         opt_start_time = datetime.strptime(opt_start_time, "%Y-%m-%d %H:%M:%S")
@@ -206,9 +214,7 @@ def collect_events(helper, ew):
     )
 
     helper.log_debug(
-        "[-] DataDog Metrics API: Response code: {}".format(
-            response.status_code
-        )
+        "[-] DataDog Metrics API: Response code: {}".format(response.status_code)
     )
     try:
         if response.status_code != 200:
@@ -225,7 +231,9 @@ def collect_events(helper, ew):
                 ew.write_event(e)
             except Exception as ex:
                 helper.log_error(
-                    "\t[-] Error happened while creating/writing error event{}".format(e)
+                    "\t[-] Error happened while creating/writing error event{}".format(
+                        e
+                    )
                 )
                 raise ex
         else:
