@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -137,3 +137,5 @@ README.txt
 
 # UCC output folder
 output/
+
+.DS_Store
