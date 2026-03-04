@@ -88,18 +88,22 @@
                                 "disableSearch": true,
                                 "autoCompleteFields": [
                                     {
-                                        "value": "com",
-                                        "label": "com"
+                                        "value": "datadoghq.com",
+                                        "label": "datadoghq.com"
                                     },
                                     {
-                                        "value": "eu",
-                                        "label": "eu"
+                                        "value": "datadoghq.eu",
+                                        "label": "datadoghq.eu"
+                                    },
+                                    {
+                                        "value": "ddog-gov.com",
+                                        "label": "ddog-gov.com"
                                     }
                                 ]
                             },
                             "encrypted": false,
                             "required": true,
-                            "help": "Enter the Datadog Site for this account. Please enter \"com\" if you are on Datadog US site or enter \"eu\" if you are on Datadog EU site. Please do not enter the full API URL here.",
+                            "help": "Select the Datadog Site for this account.",
                             "validators": [
                                 {
                                     "type": "string",
