@@ -51,7 +51,7 @@ def get_slice_time(start, end, steps):
 
 
 def build_metric_url(datadog_site, start, end, query):
-    endpoint = "https://app.{}/api/v1/query?".format(datadog_site)
+    endpoint = "{}/api/v1/query?".format(datadog_site)
     param = "&from=" + str(start)
     param += "&to=" + str(end)
     param += "&query=" + query
