@@ -42,7 +42,16 @@ The configuration steps are common for `on-prem` and `cloud`. Please follow the 
   - **Account name** (_required_): Enter a unique name for this account.
   - **API Key** (_required_): Enter the Datadog API key for this account.
   - **APP Key** (_required_): Enter the Datadog Application key for this account.
-  - **Datadog Site** (_required_): Enter the Datadog Site for this account. Please enter "com" if you are on Datadog US site or enter "eu" if you are on Datadog EU site. Please do not enter the full API URL here.
+  - **Datadog Site** (_required_): Enter the Datadog Site for this account. As of March 2026, the following Datadog sites are available:
+    | Parameter  | Site URL |
+    |------------|----------|
+    | US1 | https://app.datadoghq.com  |
+    | US3 | https://us3.datadoghq.com  |
+    | US5 | https://us3.datadoghq.com  |
+    | EU1 | https://app.datadoghq.eu  |
+    | US1-FED | https://app.ddog-gov.com |
+    | AP1 | https://ap1.datadoghq.com  |
+    | AP2 | https://ap2.datadoghq.com  |
 - Click on the `Add` green button.
 
 4. Create an input.
